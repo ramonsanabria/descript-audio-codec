@@ -173,6 +173,7 @@ class CodecMixin:
 
         original_length = audio_signal.signal_length
         resample_fn(self.sample_rate)
+
         input_db = loudness_fn()
 
         if normalize_db is not None:

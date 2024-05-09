@@ -68,25 +68,32 @@ def decode(
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
 
+
     for i in tqdm(range(len(input_files)), desc=f"Decoding files"):
-        # Load file
-        artifact = DACFile.load(input_files[i])
+        try:
+            # Load file
+            artifact = DACFile.load(input_files[i])
 
-        # Reconstruct audio from codes
-        recons = generator.decompress(artifact, verbose=verbose)
+            # Reconstruct audio from codes
 
-        # Compute output path
-        relative_path = input_files[i].relative_to(input)
-        output_dir = output / relative_path.parent
-        if not relative_path.name:
-            output_dir = output
-            relative_path = input_files[i]
-        output_name = relative_path.with_suffix(".wav").name
-        output_path = output_dir / output_name
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+            recons = generator.decompress(artifact, verbose=verbose)
 
-        # Write to file
-        recons.write(output_path)
+            # Compute output path
+            relative_path = input_files[i].relative_to(input)
+            output_dir = output / relative_path.parent
+            if not relative_path.name:
+                output_dir = output
+                relative_path = input_files[i]
+            output_name = relative_path.with_suffix(".wav").name
+            output_path = output_dir / output_name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Write to file
+            recons.write(output_path)
+
+        except RuntimeError as e:
+            print(f"Runtime error: {e}")
+            continue
 
 
 if __name__ == "__main__":
