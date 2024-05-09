@@ -1,0 +1,3 @@
+$include:
+  - /home/ramon/sesame/tts/descript-audio-codec/conf/base_ramons.yml
+  - /home/ramon/sesame/tts/descript-audio-codec/conf/1gpu_ramons.yml

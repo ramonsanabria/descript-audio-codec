@@ -25,7 +25,9 @@ def get_metrics(signal_path, recons_path, state):
     output = {}
     signal = AudioSignal(signal_path)
     recons = AudioSignal(recons_path)
-    for sr in [22050, 44100]:
+
+    for sr in [44100]:
+    #for sr in [22050, 44100]:
         x = signal.clone().resample(sr)
         y = recons.clone().resample(sr)
         k = "22k" if sr == 22050 else "44k"
@@ -35,8 +37,8 @@ def get_metrics(signal_path, recons_path, state):
                 f"stft-{k}": state.stft_loss(x, y),
                 f"waveform-{k}": state.waveform_loss(x, y),
                 f"sisdr-{k}": state.sisdr_loss(x, y),
-                f"visqol-audio-{k}": metrics.quality.visqol(x, y),
-                f"visqol-speech-{k}": metrics.quality.visqol(x, y, "speech"),
+                #f"visqol-audio-{k}": metrics.quality.visqol(x, y),
+                #f"visqol-speech-{k}": metrics.quality.visqol(x, y, "speech"),
             }
         )
     output["path"] = signal.path_to_file
@@ -84,11 +86,15 @@ def evaluate(
         with open(output / "metrics.csv", "w") as csvfile:
             with ProcessPoolExecutor(n_proc, mp.get_context("fork")) as pool:
                 for i in range(len(audio_files)):
-                    future = pool.submit(
-                        get_metrics, audio_files[i], output / audio_files[i].name, state
-                    )
-                    futures.append(future)
+                    final_output_path = Path(str(audio_files[i]).replace(str(input), str(output)+"/"))
+                    if final_output_path.exists():
 
+                        future = pool.submit(
+                            get_metrics, audio_files[i], final_output_path, state
+                        )
+                        futures.append(future)
+
+                #sys.exit()
                 keys = list(futures[0].result().keys())
                 writer = csv.DictWriter(csvfile, fieldnames=keys)
                 writer.writeheader()

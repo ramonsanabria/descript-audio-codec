@@ -45,6 +45,9 @@ Discriminator = argbind.bind(dac.model.Discriminator)
 AudioDataset = argbind.bind(AudioDataset, "train", "val")
 AudioLoader = argbind.bind(AudioLoader, "train", "val")
 
+
+
+
 # Transforms
 filter_fn = lambda fn: hasattr(fn, "transform") and fn.__qualname__ not in [
     "BaseTransform",
@@ -214,6 +217,7 @@ def val_loop(batch, state, accel):
     out = state.generator(signal.audio_data, signal.sample_rate)
     recons = AudioSignal(out["audio"], signal.sample_rate)
 
+    
     return {
         "loss": state.mel_loss(recons, signal),
         "mel/loss": state.mel_loss(recons, signal),
@@ -338,6 +342,7 @@ def save_samples(state, val_idx, writer):
 
 
 def validate(state, val_dataloader, accel):
+
     for batch in val_dataloader:
         output = val_loop(batch, state, accel)
     # Consolidate state dicts if using ZeroRedundancyOptimizer
@@ -399,8 +404,7 @@ def train(
     # Wrap the functions so that they neatly track in TensorBoard + progress bars
     # and only run when specific conditions are met.
     global train_loop, val_loop, validate, save_samples, checkpoint
-    train_loop = tracker.log("train", "value", history=False)(
-        tracker.track("train", num_iters, completed=state.tracker.step)(train_loop)
+    train_loop = tracker.log("train", "value", history=False)( tracker.track("train", num_iters, completed=state.tracker.step)(train_loop)
     )
     val_loop = tracker.track("val", len(val_dataloader))(val_loop)
     validate = tracker.log("val", "mean")(validate)
